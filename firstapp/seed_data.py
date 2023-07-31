@@ -106,7 +106,7 @@ def load_data():
             "product_purchase_price": 30,
             "sort_discription": "Short description for Product 1",
             "discription": "Full description for Product 1",
-            "stock_quantity": 0,
+            "stock_quantity": 20,
             "show_status": True,
             "meta_title": "Meta Title 1",
             "meta_keyword": "Keyword 1",
@@ -123,7 +123,7 @@ def load_data():
             "product_purchase_price": 35,
             "sort_discription": "Short description for Product 2",
             "discription": "Full description for Product 2",
-            "stock_quantity": 0,
+            "stock_quantity": 20,
             "show_status": True,
             "meta_title": "Meta Title 2",
             "meta_keyword": "Keyword 2",
@@ -138,5 +138,34 @@ def load_data():
     serializer = ProductSerializer(data=data, many=True)
     if serializer.is_valid():
         serializer.save()      
+        
+    data = [
+        {
+            "name": "John Doe",
+            "customer_ID": "CUST123",
+            "address": "123 Main Street",
+            "phone": 1234567890,
+            "email": "john@example.com",
+            "start_date": "2023-07-31",
+            "Created_at": "2023-07-31T12:00:00",
+            "Updated_at": "2023-07-31T12:00:00"
+        },
+        {
+            "name": "Jane Smith",
+            "customer_ID": "CUST456",
+            "address": "456 Park Avenue",
+            "phone": 9876543210,
+            "email": "jane@example.com",
+            "start_date": "2023-07-30",
+            "Created_at": "2023-07-30T12:00:00",
+            "Updated_at": "2023-07-30T12:00:00"
+        }
+    ]
+
+
+    
+    serializer = CustomerSerializer(data=data, many=True)
+    if serializer.is_valid():
+        serializer.save()    
         
     print("Seeding successfull =================================")

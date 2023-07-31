@@ -120,19 +120,21 @@ class PurchaseListView(APIView):
 
 
 
-    
-
 class PurchaseCreateView(APIView):
     def post(self, request):
         serializer = PurchaseSerializer(data=request.data)
         
         if serializer.is_valid():
+            
+            purchase_data = serializer.validated_data
+            purchase_order_products_data = purchase_data.pop('purchase_order_product')
+            pprint(purchase_order_products_data)
+            
             with transaction.atomic():
-                purchase = serializer.save()
+                purchase = Purchase.objects.create(**purchase_data)
 
-                purchase_order_products_data = request.data.get('purchase_order_product', [])
                 for single_data in purchase_order_products_data:
-                    product_id = single_data.get('product')
+                    product_id = single_data.get('product').id
                     quantity = single_data.get('quantity')
                     sub_total = single_data.get('sub_total')
                     
@@ -158,7 +160,83 @@ class PurchaseCreateView(APIView):
             return Response(response, status=status.HTTP_201_CREATED)
         else:   
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        
+
+class SaleListAPIView(APIView):
+    def get(self, request):
+        sales = Sale.objects.all()
+        # Add any filtering, sorting, or pagination here if needed
+        serializer = SaleCreateSerializer(sales, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
+    
+
+class SaleCreateAPIView(APIView):
+    def post(self, request):
+        serializer = SaleCreateSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            with transaction.atomic():
+                    
+                sale_data = serializer.validated_data
+                sale_order_products_data = sale_data.pop('sale_order_product')
+                pprint(sale_order_products_data)
+
+                # Set total_quantity and total to zero initially
+                sale_data['total_quantity'] = 0
+                sale_data['total'] = 0.0
+
+                # Create Sale object
+                sale = Sale.objects.create(**sale_data)
+
+                for product_data in sale_order_products_data:
+                    quantity = product_data['quantity']
+                    product = product_data['product']
+                    sub_total = product.price * quantity
+
+                    # Create Sale_order_product object with the created Sale object as the reference
+                    Sale_order_product.objects.create(sale=sale, product=product, quantity=quantity, sub_total=sub_total)
+
+                    # Update total_quantity and total as we iterate through Sale_order_product instances
+                    sale.total_quantity += quantity
+                    sale.total += sub_total
+
+                    # Decrement the Product stock_quantity by the sale quantity
+                    product.stock_quantity -= quantity
+                    product.save()
+
+                # Save the updated Sale object
+                sale.save()
+                
+            response = {
+                'success': True,
+                'message': 'Sale create successfull'
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerListView(APIView):
+    def get(self, request):
+        customers = Customer.objects.all()
+        serializer = CustomerSerializer(customers, many=True)
+        return Response(serializer.data)
+
+
+
+class CustomerCreateView(APIView):
+    def post(self, request):
+        serializer = CustomerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 
 # class PurchaseCreateView(APIView):
 #     def post(self, request):

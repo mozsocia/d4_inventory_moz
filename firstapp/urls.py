@@ -24,5 +24,12 @@ urlpatterns = [
     path('api_d/purchases/create/', PurchaseCreateView.as_view(), name='purchase-create'),
 
 
+    path('api_d/customers/', CustomerListView.as_view(), name='customer-list'),
+    path('api_d/customers/create/', CustomerCreateView.as_view(), name='customer-create'),
+
+
+    path('api_d/sales/', SaleListAPIView.as_view(), name='sale-list'),
+    path('api_d/sales/create/', SaleCreateAPIView.as_view(), name='sale-create'),
+
 
 ]

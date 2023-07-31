@@ -71,13 +71,11 @@ class Customer(models.Model):
     phone = models.IntegerField()
     email = models.EmailField(max_length=100)
     start_date = models.DateField(max_length=50)
-    image = models.ImageField(upload_to ='media/supplier_image', blank=True)
+    image = models.ImageField(upload_to ='media/supplier_image',default="no_img.png" , blank=True)
     Created_at = models.DateTimeField(max_length=100, blank=True, null=True)
     Updated_at = models.DateTimeField(max_length=100, blank=True, null=True)
 
-
     def __str__(self):
-
         return self.name
 
 
@@ -152,3 +150,38 @@ class Purchase_order_product(models.Model):
     
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE)
+    
+    
+
+
+
+class Sale(models.Model):
+    phone = models.IntegerField(blank=True, null=True)
+    date = models.DateField()
+
+    status = models.IntegerField()
+    payment_status = models.IntegerField()
+    total_quantity = models.IntegerField(blank=True, null=True)
+    total = models.FloatField(blank=True, null=True)
+    discount= models.FloatField(blank=True, null=True)
+    shipping_cost = models.FloatField(null=True, blank=True)
+    grand_total = models.FloatField()
+    
+    paid = models.FloatField()
+    due = models.FloatField( blank=True, null=True)
+    note = models.TextField(null=True, blank=True)
+
+    customer = models.ForeignKey(Customer,  blank=True, null=True, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+            
+        return self.product_name
+    
+class Sale_order_product(models.Model):
+    sub_total = models.FloatField()
+    quantity = models.IntegerField()
+    
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
+    
