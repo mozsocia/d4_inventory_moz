@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Submit JSON Form</title>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
+
+
+  <!-- Include Alpine.js library -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+
+  <h1>Submit JSON Form</h1>
+
+  <div x-data="jsonDataForm()" x-init="$watch('counter_purchaseOrderProducts', addValidation)">
+    <form @submit="submitForm" id="jsonForm">
+      <!-- Purchase Model Fields -->
+      <label for="phone">Phone:</label>
+      <input type="text" id="phone" name="phone" x-model="formData.phone"><br>
+
+      <label for="date">Date:</label>
+      <input type="date" id="date" name="date" x-model="formData.date"><br>
+
+      <label for="status">Status:</label>
+      <input type="number" id="status" name="status" x-model="formData.status"><br>
+
+      <label for="payment_status">Payment Status:</label>
+      <input type="number" id="payment_status" name="payment_status" x-model="formData.payment_status"><br>
+
+      <label for="total_quantity">Total Quantity:</label>
+      <input type="number" id="total_quantity" name="total_quantity" x-model="formData.total_quantity"><br>
+
+      <label for="total">Total:</label>
+      <input type="number" step="0.01" id="total" name="total" x-model="formData.total"><br>
+
+      <label for="discount">Discount:</label>
+      <input type="number" step="0.01" id="discount" name="discount" x-model="formData.discount"><br>
+
+      <label for="shipping_cost">Shipping Cost:</label>
+      <input type="number" step="0.01" id="shipping_cost" name="shipping_cost" x-model="formData.shipping_cost"><br>
+
+      <label for="grand_total">Grand Total:</label>
+      <input type="number" step="0.01" id="grand_total" name="grand_total" x-model="formData.grand_total"><br>
+
+      <label for="paid">Paid:</label>
+      <input type="number" step="0.01" id="paid" name="paid" x-model="formData.paid"><br>
+
+      <label for="due">Due:</label>
+      <input type="number" step="0.01" id="due" name="due" x-model="formData.due"><br>
+
+      <label for="note">Note:</label>
+      <textarea id="note" name="note" x-model="formData.note"></textarea><br>
+
+      <!-- Supplier Field (ForeignKey) -->
+      <label for="supplier">Supplier:</label>
+      <select id="supplier" name="supplier" x-model="formData.supplier">
+        <option value="">Select a supplier</option>
+        <option value="1">one supplier</option>
+        <option value="2">2 supplier</option>
+        <!-- You can populate the options dynamically using Django template tags -->
+        <!-- Example: -->
+        <!-- {% for supplier in suppliers %} -->
+        <!--     <option value="{{ supplier.id }}">{{ supplier.name }}</option> -->
+        <!-- {% endfor %} -->
+      </select><br>
+
+      <hr>
+
+      <!-- Purchase_order_product Model Fields -->
+      <label for="purchase_order_product">Purchase Order Products:</label>
+
+      <template x-for="(product, index) in purchaseOrderProducts" :key="index">
+        <div>
+          <label for="quantity">Quantity:</label>
+          <input type="number" class="classToValidate" x-model="product.quantity"
+            :name="'purchase_order_product_quantity' + product.id"><br>
+
+          <!-- Product Field (ForeignKey) -->
+          <label for="product">Product:</label>
+          <select id="product" class="classToValidate" x-model="product.product"
+            :name="'purchase_order_product_product' + product.id">
+            <option value="">Select a product</option>
+            <option value="1">one product</option>
+            <option value="2">2 product</option>
+            <!-- You can populate the options dynamically using Django template tags -->
+            <!-- Example: -->
+            <!-- {% for product in products %} -->
+            <!--     <option value="{{ product.id }}">{{ product.name }}</option> -->
+            <!-- {% endfor %} -->
+          </select><br>
+
+          <label for="sub_total">Sub Total:</label>
+          <input type="number" class="classToValidate" step="0.01" x-model="product.sub_total"
+            :name="'purchase_order_product_sub_total' + product.id"><br>
+
+          <br>
+        </div>
+      </template>
+
+      <button type="button" @click="addProductField">Add Product</button><br>
+
+      <button type="submit">Submit JSON</button>
+    </form>
+  </div>
+
+  <script>
+
+
+    // Initialize jQuery Validation Plugin after the document is ready
+    $(document).ready(function () {
+      $('#jsonForm').validate({
+        rules: {
+          phone: {
+            required: true,
+            digits: true
+          },
+          date: {
+            required: true
+          },
+          status: {
+            required: true,
+            digits: true
+          },
+          payment_status: {
+            required: true,
+            digits: true
+          },
+          total_quantity: {
+            required: true,
+            digits: true
+          },
+          total: {
+            required: true,
+            number: true
+          },
+          discount: {
+            required: true,
+            number: true
+          },
+          shipping_cost: {
+            required: true,
+            number: true
+          },
+          grand_total: {
+            required: true,
+            number: true
+          },
+          paid: {
+            required: true,
+            number: true
+          },
+          due: {
+            required: true,
+            number: true
+          },
+          note: {
+            required: true,
+            maxlength: 500
+          },
+          supplier: {
+            required: true,
+          },
+        },
+      });
+
+    });
+
+
+    function jsonDataForm() {
+      return {
+        formData: {
+          phone: null,
+          date: null,
+          status: null,
+          payment_status: null,
+          total_quantity: null,
+          total: null,
+          discount: null,
+          shipping_cost: null,
+          grand_total: null,
+          paid: null,
+          due: null,
+          note: null,
+          supplier: null,
+        },
+        counter_purchaseOrderProducts: 0,
+        purchaseOrderProducts: [],
+
+        addProductField() {
+          this.counter_purchaseOrderProducts = this.counter_purchaseOrderProducts + 1;
+          this.purchaseOrderProducts.push({ quantity: null, product: null, sub_total: null, id: this.counter_purchaseOrderProducts });
+
+        },
+
+        addValidation(val) {
+          $("#jsonForm .classToValidate").each(function () {
+            $(this).rules('add', {
+              required: true
+            });
+          });
+        },
+
+        submitForm(e) {
+          e.preventDefault();
+          const $form = $('#jsonForm');
+          if ($form.valid()) {
+            const formData = { ...this.formData };
+            formData.purchase_order_product = this.purchaseOrderProducts;
+            console.log(JSON.stringify(formData));
+
+
+            fetch('http://127.0.0.1:8000/api/purchases/create/', {
+              method: 'POST',
+              body: JSON.stringify(formData),
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log('Successfully submitted:', data);
+              })
+              .catch((error) => {
+                console.error('Error submitting form:', error);
+              });
+
+
+          }
+        },
+
+
+
+      };
+    }
+
+  </script>
+
+
+</body>
+
+</html>

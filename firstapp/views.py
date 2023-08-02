@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.views import View
 from .serializers import *
 from .models import *
 from rest_framework import status
@@ -121,6 +121,9 @@ class PurchaseListView(APIView):
 
 
 class PurchaseCreateView(APIView):
+    def get(self, request):
+        return render(request, 'firstapp/purchase/create_purchase.html')
+    
     def post(self, request):
         serializer = PurchaseSerializer(data=request.data)
         
@@ -162,7 +165,29 @@ class PurchaseCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
-        
+
+
+
+#
+# --- Sales ----------------------------------------------------------------
+#
+class SaleListView(View):
+    def get(self, request):
+        sales = Sale.objects.all()
+        return render(request, 'sales/sale_list.html', {'sales': sales})
+
+
+class CreateSaleView(View):
+    def get(self, request):
+        # form = SaleForm()
+        return render(request, 'firstapp/sales/create_sale.html')
+
+    # def post(self, request):
+    #     form = SaleForm(request.POST)
+    #     if form.is_valid():
+    #         form.save()
+    #         return redirect('sale_list')
+    #     return render(request, 'sales/create_sale.html', {'form': form})
 
 class SaleListAPIView(APIView):
     def get(self, request):
@@ -174,6 +199,9 @@ class SaleListAPIView(APIView):
     
 
 class SaleCreateAPIView(APIView):
+    def get(self, request):
+        return render(request, 'firstapp/sales/create_sale.html')
+    
     def post(self, request):
         serializer = SaleCreateSerializer(data=request.data)
         
