@@ -3,6 +3,8 @@ from .views import *
 
 urlpatterns = [
     path('hello/', hello_view, name='hello'),
+    path('test/', test_view, name='test'),
+    
     
     
         # serializers urls for data entries

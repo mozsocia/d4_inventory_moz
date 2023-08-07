@@ -17,6 +17,9 @@ def hello_view(request):
     message = "Hello World Django"
     return render(request, 'firstapp/hello.html', {'message': message})
 
+def test_view(request):
+    return render(request, 'firstapp/test.html')
+
 
 
 #
@@ -193,7 +196,7 @@ class SaleListAPIView(APIView):
     def get(self, request):
         sales = Sale.objects.all()
         # Add any filtering, sorting, or pagination here if needed
-        serializer = SaleCreateSerializer(sales, many=True)
+        serializer = SaleGetSerializer(sales, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
@@ -207,42 +210,51 @@ class SaleCreateAPIView(APIView):
         
         if serializer.is_valid():
             with transaction.atomic():
-                    
-                sale_data = serializer.validated_data
-                sale_order_products_data = sale_data.pop('sale_order_product')
-                pprint(sale_order_products_data)
-
-                # Set total_quantity and total to zero initially
-                sale_data['total_quantity'] = 0
-                sale_data['total'] = 0.0
-
-                # Create Sale object
-                sale = Sale.objects.create(**sale_data)
-
-                for product_data in sale_order_products_data:
-                    quantity = product_data['quantity']
-                    product = product_data['product']
-                    sub_total = product.price * quantity
-
-                    # Create Sale_order_product object with the created Sale object as the reference
-                    Sale_order_product.objects.create(sale=sale, product=product, quantity=quantity, sub_total=sub_total)
-
-                    # Update total_quantity and total as we iterate through Sale_order_product instances
-                    sale.total_quantity += quantity
-                    sale.total += sub_total
-
-                    # Decrement the Product stock_quantity by the sale quantity
-                    product.stock_quantity -= quantity
-                    product.save()
-
-                # Save the updated Sale object
-                sale.save()
                 
-            response = {
-                'success': True,
-                'message': 'Sale create successfull'
-            }
+                try:
+                    
+                    sale_data = serializer.validated_data
+                    sale_order_products_data = sale_data.pop('sale_order_product')
+                    
+                    # Set total_quantity and total to zero initially
+                    sale_data['total_quantity'] = 0
+                    sale_data['total'] = 0.0
+
+                    # Create Sale object
+                    sale = Sale.objects.create(**sale_data)
+
+                    for product_data in sale_order_products_data:
+               
+                        quantity = product_data['quantity']
+            
+                        product = product_data['product']
+                        sub_total = product.price * quantity
+
+                        # Create Sale_order_product object with the created Sale object as the reference
+                        Sale_order_product.objects.create(sale=sale, product=product, quantity=quantity, sub_total=sub_total)
+
+                        # Update total_quantity and total as we iterate through Sale_order_product instances
+                        sale.total_quantity += quantity
+                        sale.total += sub_total
+
+                        # Decrement the Product stock_quantity by the sale quantity
+                        product.stock_quantity -= quantity
+                        product.save()
+
+                    # Save the updated Sale object
+                    sale.save()
+                    
+                except Exception as e:
+                    # Handle any other unexpected errors here
+                    pprint(e)
+                    return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+                response = {
+                    'success': True,
+                    'message': 'Sale create successfull'
+                }
             return Response(response, status=status.HTTP_201_CREATED)
+        pprint(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
